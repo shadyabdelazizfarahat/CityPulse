@@ -4,24 +4,8 @@ This is a new [**React Native**](https://reactnative.dev) project, bootstrapped 
 
 > **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
 
-## Step 1: Start Metro
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
-
-To start the Metro dev server, run the following command from the root of your React Native project:
-
-```sh
-# Using npm
-npm start
-
-# OR using Yarn
-yarn start
-```
-
-## Step 2: Setup Instructions
-Before running the app for the first time, execute the following commands from the root of your project:
-
-- Install project dependencies:
+## Step 1: Setup Instructions
 
 Clone the repo
 then go to project folder
@@ -50,7 +34,7 @@ For Android
 yarn android
 ```
 
-## Assumptions
+## Step 2: Assumptions
 I am saving favorites in async storage, I had no time to add firestore, so I am assumung favorites will be shared among all users per app install.
 
 Also I have no time to add screenshots, but I hope run command is easy to run
