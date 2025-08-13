@@ -23,6 +23,10 @@ Before running the app for the first time, execute the following commands from t
 
 - Install project dependencies:
 
+Clone the repo
+then go to project folder
+then create .env file at the root folder and add given credentials
+then run
 ```sh
 yarn install
 ```

@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Alert,
   Linking,
+  Platform,
 } from 'react-native';
 import { useRoute, RouteProp } from '@react-navigation/native';
 import { useTranslation } from '@/hooks';
@@ -37,10 +38,10 @@ export const EventDetailsScreen: React.FC = () => {
     ? formatPriceRange(event.priceRanges)
     : '';
   const venueAddress = formatVenueAddress(event.venue);
-  const latitude = event.venue.location?.latitude
-  const longitude = event.venue.location?.longitude
-  const lat = latitude ? parseFloat(latitude) : null
-  const lng = longitude ? parseFloat(longitude) : null
+  const latitude = event.venue.location?.latitude;
+  const longitude = event.venue.location?.longitude;
+  const lat = latitude ? parseFloat(latitude) : null;
+  const lng = longitude ? parseFloat(longitude) : null;
 
   const handleFavoriteToggle = async () => {
     try {
@@ -120,25 +121,27 @@ export const EventDetailsScreen: React.FC = () => {
           </View>
         )}
 
-        {lat && lng &&<Card style={styles.mapCard}>
-          <MapView
-            style={styles.container}
-            initialRegion={{
-              latitude: lat,
-              longitude: lng,
-              latitudeDelta: 0.01,
-              longitudeDelta: 0.01,
-            }}
-          >
-            <Marker
-              coordinate={{
+        {Platform.OS === 'ios' && lat && lng && (
+          <Card style={styles.mapCard}>
+            <MapView
+              style={styles.container}
+              initialRegion={{
                 latitude: lat,
                 longitude: lng,
+                latitudeDelta: 0.01,
+                longitudeDelta: 0.01,
               }}
-              title={event.name}
-            />
-          </MapView>
-        </Card>}
+            >
+              <Marker
+                coordinate={{
+                  latitude: lat,
+                  longitude: lng,
+                }}
+                title={event.name}
+              />
+            </MapView>
+          </Card>
+        )}
 
         <Card style={styles.infoCard}>
           {renderInfoRow('📅', t('eventDetails.when'), formattedDate)}
@@ -288,7 +291,7 @@ const styles = StyleSheet.create({
   mapCard: {
     width: '100%',
     height: 300,
-    alignSelf: 'center'
+    alignSelf: 'center',
   },
   infoRow: {
     flexDirection: 'row',
