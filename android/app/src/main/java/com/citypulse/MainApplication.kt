@@ -1,4 +1,4 @@
-package com.citypulse
+package com.citypulse.app
 
 import android.app.Application
 import com.facebook.react.PackageList
