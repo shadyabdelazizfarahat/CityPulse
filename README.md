@@ -25,8 +25,8 @@ Before running the app for the first time, execute the following commands from t
 
 Clone the repo
 then go to project folder
-then create .env file at the root folder and add given credentials
 then run
+
 ```sh
 yarn install
 ```
@@ -50,6 +50,10 @@ For Android
 yarn android
 ```
 
+## Assumptions
+I am saving favorites in async storage, I had no time to add firestore, so I am assumung favorites will be shared among all users per app install.
+
+Also I have no time to add screenshots, but I hope run command is easy to run
 
 ## Step 3: Modify your app
 
