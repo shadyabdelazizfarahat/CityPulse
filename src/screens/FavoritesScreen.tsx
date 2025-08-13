@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useTranslation } from '@/hooks';
-import { useApp } from '../contexts/AppContext';
+import { useApp } from '@/contexts';
 import { COLORS, DIMENSIONS, FONTS } from '@/utils';
-import EventList from '@/components/EventList';
+import { EventList } from '@/components';
 
 export const FavoritesScreen = () => {
   const { t, isRTL } = useTranslation();

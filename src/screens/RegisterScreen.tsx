@@ -10,18 +10,26 @@ import {
   TextInput,
   TouchableOpacity,
 } from 'react-native';
-import { useAuth } from '../contexts/AuthContext';
-import { useTranslation } from '../hooks/useTranslation';
+import { useAuth } from '@/contexts';
+import { useTranslation, useFormValidation } from '@/hooks';
 import {
-  validateEmail,
-  validatePassword,
-  validateName,
-} from '../utils/helpers';
-import { COLORS, DIMENSIONS, FONTS, SCREENS } from '@/utils';
-import Button from '../components/Button';
-import Input from '../components/Input';
-import Loading from '../components/Loading';
+  COLORS,
+  DIMENSIONS,
+  FONTS,
+  SCREENS,
+  createRegisterValidationSchema,
+} from '@/utils';
 import { RootStackNavigationProp } from '@/navigation';
+import { Button, Input, Loading } from '@/components';
+
+// Types for the registration form
+interface RegisterFormData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
 
 export const RegisterScreen = ({
   navigation,
@@ -31,14 +39,17 @@ export const RegisterScreen = ({
   const { register, isLoading } = useAuth();
   const { t, isRTL } = useTranslation();
 
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-  });
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  // Initialize form validation
+  const validationSchema = createRegisterValidationSchema(t);
+  const { formData, errors, updateField, validateField, validateForm } =
+    useFormValidation<RegisterFormData>(validationSchema, {
+      firstName: '',
+      lastName: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+    });
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -46,43 +57,6 @@ export const RegisterScreen = ({
   const emailRef = useRef<TextInput>(null);
   const passwordRef = useRef<TextInput>(null);
   const confirmPasswordRef = useRef<TextInput>(null);
-
-  const validateForm = (): boolean => {
-    const newErrors: { [key: string]: string } = {};
-
-    if (!formData.firstName) {
-      newErrors.firstName = t('errors.nameRequired');
-    } else if (!validateName(formData.firstName)) {
-      newErrors.firstName = 'First name must be 2-50 characters';
-    }
-
-    if (!formData.lastName) {
-      newErrors.lastName = t('errors.nameRequired');
-    } else if (!validateName(formData.lastName)) {
-      newErrors.lastName = 'Last name must be 2-50 characters';
-    }
-
-    if (!formData.email) {
-      newErrors.email = t('errors.emailRequired');
-    } else if (!validateEmail(formData.email)) {
-      newErrors.email = t('errors.invalidEmail');
-    }
-
-    if (!formData.password) {
-      newErrors.password = t('errors.passwordRequired');
-    } else if (!validatePassword(formData.password)) {
-      newErrors.password = t('errors.passwordTooShort');
-    }
-
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = t('errors.passwordRequired');
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = t('errors.passwordsDoNotMatch');
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
 
   const handleRegister = async () => {
     if (!validateForm()) return;
@@ -98,16 +72,29 @@ export const RegisterScreen = ({
     }
   };
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
-    }
+  // Handle input changes with validation
+  const handleInputChange = (field: keyof RegisterFormData, value: string) => {
+    updateField(field, value);
+  };
+
+  // Handle input blur for real-time validation
+  const handleInputBlur = (field: keyof RegisterFormData) => {
+    validateField(field);
   };
 
   const navigateToLogin = () => {
     navigation.navigate(SCREENS.LOGIN);
   };
+
+  // Helper function to get field props
+  const getFieldProps = (field: keyof RegisterFormData) => ({
+    value: formData[field],
+    onChangeText: (value: string) => handleInputChange(field, value),
+    onBlur: () => handleInputBlur(field),
+    error: errors[field],
+    isRTL,
+    required: true,
+  });
 
   return (
     <KeyboardAvoidingView
@@ -127,80 +114,62 @@ export const RegisterScreen = ({
 
         <View style={styles.form}>
           <Input
+            {...getFieldProps('firstName')}
             label={t('auth.firstName')}
-            value={formData.firstName}
-            onChangeText={value => handleInputChange('firstName', value)}
             placeholder={t('auth.firstName')}
             autoCapitalize="words"
             returnKeyType="next"
             onSubmitEditing={() => lastNameRef.current?.focus()}
-            error={errors.firstName}
             leftIcon={<Text style={styles.inputIcon}>👤</Text>}
-            isRTL={isRTL}
-            required
           />
 
           <Input
+            {...getFieldProps('lastName')}
             ref={lastNameRef}
             label={t('auth.lastName')}
-            value={formData.lastName}
-            onChangeText={value => handleInputChange('lastName', value)}
             placeholder={t('auth.lastName')}
             autoCapitalize="words"
             returnKeyType="next"
             onSubmitEditing={() => emailRef.current?.focus()}
-            error={errors.lastName}
             leftIcon={<Text style={styles.inputIcon}>👤</Text>}
-            isRTL={isRTL}
-            required
           />
 
           <Input
+            {...getFieldProps('email')}
             ref={emailRef}
             label={t('auth.email')}
-            value={formData.email}
-            onChangeText={value => handleInputChange('email', value)}
             placeholder={t('auth.email')}
             keyboardType="email-address"
             autoCapitalize="none"
             autoComplete="email"
             returnKeyType="next"
             onSubmitEditing={() => passwordRef.current?.focus()}
-            error={errors.email}
             leftIcon={<Text style={styles.inputIcon}>📧</Text>}
-            isRTL={isRTL}
-            required
           />
 
           <Input
+            {...getFieldProps('password')}
             ref={passwordRef}
             label={t('auth.password')}
-            value={formData.password}
-            onChangeText={value => handleInputChange('password', value)}
             placeholder={t('auth.password')}
             secureTextEntry={!showPassword}
             returnKeyType="next"
             onSubmitEditing={() => confirmPasswordRef.current?.focus()}
-            error={errors.password}
             leftIcon={<Text style={styles.inputIcon}>🔒</Text>}
             rightIcon={
               <Text style={styles.inputIcon}>{showPassword ? '👁️' : '🙈'}</Text>
             }
             onRightIconPress={() => setShowPassword(!showPassword)}
-            isRTL={isRTL}
-            required
           />
 
           <Input
+            {...getFieldProps('confirmPassword')}
             ref={confirmPasswordRef}
             label={t('auth.confirmPassword')}
-            value={formData.confirmPassword}
-            onChangeText={value => handleInputChange('confirmPassword', value)}
             placeholder={t('auth.confirmPassword')}
             secureTextEntry={!showConfirmPassword}
             returnKeyType="done"
             onSubmitEditing={handleRegister}
-            error={errors.confirmPassword}
             leftIcon={<Text style={styles.inputIcon}>🔒</Text>}
             rightIcon={
               <Text style={styles.inputIcon}>
@@ -210,8 +179,6 @@ export const RegisterScreen = ({
             onRightIconPress={() =>
               setShowConfirmPassword(!showConfirmPassword)
             }
-            isRTL={isRTL}
-            required
           />
 
           <Button

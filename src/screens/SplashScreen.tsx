@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { COLORS, FONTS, SCREENS } from '@/utils';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '@/contexts';
 import { RootStackNavigationProp } from '@/navigation';
 
 

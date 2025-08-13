@@ -1,10 +1,9 @@
 import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
-import { useAuth } from '../contexts/AuthContext';
-import { useApp } from '../contexts/AppContext';
-import { useTranslation } from '../hooks/useTranslation';
+import { useAuth, useApp } from '@/contexts';
+import { useTranslation } from '@/hooks';
 import { COLORS, DIMENSIONS, FONTS } from '@/utils';
-import Button from '../components/Button';
+import {Button} from '@/components';
 import { useNavigation } from '@react-navigation/native';
 import { RootStackNavigationProp } from '@/navigation';
 

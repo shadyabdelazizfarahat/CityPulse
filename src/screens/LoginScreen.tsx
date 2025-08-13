@@ -10,15 +10,24 @@ import {
   TextInput,
   TouchableOpacity,
 } from 'react-native';
-import { useAuth } from '../contexts/AuthContext';
-import { useTranslation } from '../hooks/useTranslation';
-import { validateEmail, validatePassword } from '../utils/helpers';
-import { COLORS, DIMENSIONS, FONTS, SCREENS } from '@/utils';
-import Button from '../components/Button';
-import Input from '../components/Input';
-import Loading from '../components/Loading';
+import { useAuth } from '@/contexts';
+import { useTranslation, useFormValidation } from '@/hooks';
+import {
+  COLORS,
+  DIMENSIONS,
+  FONTS,
+  SCREENS,
+  createLoginValidationSchema,
+} from '@/utils';
 import { BiometricCapability } from '@/types';
 import { RootStackNavigationProp } from '@/navigation';
+import { Button, Input, Loading } from '@/components';
+
+// Types for the login form
+interface LoginFormData {
+  email: string;
+  password: string;
+}
 
 export const LoginScreen = ({
   navigation,
@@ -33,11 +42,14 @@ export const LoginScreen = ({
   } = useAuth();
   const { t, isRTL } = useTranslation();
 
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  });
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  // Initialize form validation
+  const validationSchema = createLoginValidationSchema(t);
+  const { formData, errors, updateField, validateField, validateForm } =
+    useFormValidation<LoginFormData>(validationSchema, {
+      email: '',
+      password: '',
+    });
+
   const [showPassword, setShowPassword] = useState(false);
   const [biometricCapability, setBiometricCapability] =
     useState<BiometricCapability>({
@@ -60,40 +72,24 @@ export const LoginScreen = ({
     }
   };
 
-  const validateForm = (): boolean => {
-    const newErrors: { [key: string]: string } = {};
-
-    if (!formData.email) {
-      newErrors.email = t('errors.emailRequired');
-    } else if (!validateEmail(formData.email)) {
-      newErrors.email = t('errors.invalidEmail');
-    }
-
-    if (!formData.password) {
-      newErrors.password = t('errors.passwordRequired');
-    } else if (!validatePassword(formData.password)) {
-      newErrors.password = t('errors.passwordTooShort');
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
   const handleLogin = async () => {
     if (!validateForm()) return;
+
     const onSuccess = () => {
       navigation.replace(SCREENS.MAIN);
     };
+
     const onError = (error?: string) => {
       Alert.alert('Authentication Failed', error, [
         { text: 'Cancel', style: 'cancel' },
       ]);
     };
+
     try {
       await login(
         { email: formData.email, password: formData.password },
         onSuccess,
-        onError
+        onError,
       );
     } catch (error: any) {
       Alert.alert(
@@ -109,7 +105,7 @@ export const LoginScreen = ({
       if (success) {
         navigation.replace(SCREENS.MAIN);
       } else {
-        Alert.alert('No User Found, please signup')
+        Alert.alert('No User Found, please signup');
       }
     } catch (error: any) {
       // Don't show error for user cancellation
@@ -125,16 +121,29 @@ export const LoginScreen = ({
     }
   };
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
-    }
+  // Handle input changes with validation
+  const handleInputChange = (field: keyof LoginFormData, value: string) => {
+    updateField(field, value);
+  };
+
+  // Handle input blur for real-time validation
+  const handleInputBlur = (field: keyof LoginFormData) => {
+    validateField(field);
   };
 
   const navigateToRegister = () => {
     navigation.navigate(SCREENS.REGISTER as never);
   };
+
+  // Helper function to get field props
+  const getFieldProps = (field: keyof LoginFormData) => ({
+    value: formData[field],
+    onChangeText: (value: string) => handleInputChange(field, value),
+    onBlur: () => handleInputBlur(field),
+    error: errors[field],
+    isRTL,
+    required: true,
+  });
 
   return (
     <KeyboardAvoidingView
@@ -156,38 +165,30 @@ export const LoginScreen = ({
 
         <View style={styles.form}>
           <Input
+            {...getFieldProps('email')}
             label={t('auth.email')}
-            value={formData.email}
-            onChangeText={value => handleInputChange('email', value)}
             placeholder={t('auth.email')}
             keyboardType="email-address"
             autoCapitalize="none"
             autoComplete="email"
             returnKeyType="next"
             onSubmitEditing={() => passwordRef.current?.focus()}
-            error={errors.email}
             leftIcon={<Text style={styles.inputIcon}>📧</Text>}
-            isRTL={isRTL}
-            required
           />
 
           <Input
+            {...getFieldProps('password')}
             ref={passwordRef}
             label={t('auth.password')}
-            value={formData.password}
-            onChangeText={value => handleInputChange('password', value)}
             placeholder={t('auth.password')}
             secureTextEntry={!showPassword}
             returnKeyType="done"
             onSubmitEditing={handleLogin}
-            error={errors.password}
             leftIcon={<Text style={styles.inputIcon}>🔒</Text>}
             rightIcon={
               <Text style={styles.inputIcon}>{showPassword ? '👁️' : '🙈'}</Text>
             }
             onRightIconPress={() => setShowPassword(!showPassword)}
-            isRTL={isRTL}
-            required
           />
 
           <TouchableOpacity style={styles.forgotPassword}>

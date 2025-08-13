@@ -10,10 +10,12 @@ import {
   AuthState,
   LoginCredentials,
   RegisterCredentials,
-} from '../types';
-import { storageService } from '../services/storage';
-import { biometricService } from '../services/biometric';
-import firebaseAuthService from '@/services/firebaseAuth';
+} from '@/types';
+import {
+  storageService,
+  biometricService,
+  firebaseAuthService,
+} from '@/services';
 import * as Keychain from 'react-native-keychain';
 
 interface AuthContextType extends AuthState {
@@ -167,6 +169,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setIsLoading(true);
       await Promise.all([storageService.removeUser()]);
+      await firebaseAuthService.signOut();
       dispatch({ type: 'LOGOUT' });
     } catch (error) {
       console.error('Logout failed:', error);

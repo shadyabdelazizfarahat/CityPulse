@@ -5,9 +5,9 @@ import React, {
   useEffect,
   ReactNode,
 } from 'react';
-import { Event, Language } from '../types';
-import { storageService } from '../services/storage';
-import { isRTL } from '../utils/helpers';
+import { Event, Language } from '@/types';
+import { storageService } from '@/services';
+import { isRTL } from '@/utils';
 
 interface AppState {
   language: Language;

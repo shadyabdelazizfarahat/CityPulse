@@ -9,16 +9,16 @@ import {
   Linking,
 } from 'react-native';
 import { useRoute, RouteProp } from '@react-navigation/native';
-import { useTranslation } from '../hooks/useTranslation';
-import { useApp } from '../contexts/AppContext';
-import { RootStackParamList } from '../types';
+import { useTranslation } from '@/hooks';
+import { useApp } from '@/contexts';
+import { RootStackParamList } from '@/types';
 import { COLORS, DIMENSIONS, FONTS } from '@/utils';
 import {
   formatDateTime,
   getBestEventImage,
   formatPriceRange,
   formatVenueAddress,
-} from '../utils/helpers';
+} from '@/utils';
 import { Button, Card, Image } from '@/components';
 import MapView, { Marker } from 'react-native-maps';
 

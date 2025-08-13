@@ -1,13 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, RefreshControl, Alert } from 'react-native';
-
-import { Input, Button, Loading } from '@/components';
-
-import { useTranslation } from '../hooks/useTranslation';
+import { Input, Button, Loading, EventList } from '@/components';
+import { useTranslation } from '@/hooks';
 import { useEvents } from '@/hooks';
 
 import { COLORS, DIMENSIONS, FONTS } from '@/utils';
-import EventList from '@/components/EventList';
 
 export const HomeScreen = () => {
   const { t, isRTL } = useTranslation();
