@@ -3,8 +3,6 @@ import Config from 'react-native-config';
 export const API_CONFIG = {
   TICKETMASTER_BASE_URL: Config.TICKETMASTER_BASE_URL,
   TICKETMASTER_API_KEY: Config.TICKETMASTER_API_KEY,
-  DEFAULT_COUNTRY: 'US',
-  DEFAULT_LOCALE: 'en-us',
   PAGE_SIZE: 20,
 };
 
@@ -48,15 +46,6 @@ export const ERROR_MESSAGES = {
   GENERIC_ERROR: 'Something went wrong. Please try again.',
 } as const;
 
-// Success Messages
-export const SUCCESS_MESSAGES = {
-  LOGIN_SUCCESS: 'Successfully logged in!',
-  REGISTRATION_SUCCESS: 'Account created successfully!',
-  PROFILE_UPDATED: 'Profile updated successfully!',
-  EVENT_FAVORITED: 'Event added to favorites!',
-  EVENT_UNFAVORITED: 'Event removed from favorites!',
-} as const;
-
 // Validation Rules
 export const VALIDATION = {
   EMAIL_REGEX: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
@@ -65,36 +54,10 @@ export const VALIDATION = {
   NAME_MAX_LENGTH: 50,
 } as const;
 
-// Biometric Types
-export const BIOMETRIC_TYPES = {
-  TOUCH_ID: 'TouchID',
-  FACE_ID: 'FaceID',
-  FINGERPRINT: 'Biometrics',
-} as const;
-
-// Event Categories
-export const EVENT_CATEGORIES = [
-  { id: 'music', name: 'Music' },
-  { id: 'sports', name: 'Sports' },
-  { id: 'arts', name: 'Arts & Theater' },
-  { id: 'family', name: 'Family' },
-  { id: 'misc', name: 'Miscellaneous' },
-] as const;
-
-// Default Event Image
-export const DEFAULT_EVENT_IMAGE =
-  'https://via.placeholder.com/300x200?text=Event+Image';
-
 // Map Configuration
 export const MAP_CONFIG = {
   DEFAULT_LATITUDE: 40.7128,
   DEFAULT_LONGITUDE: -74.006,
   DEFAULT_ZOOM: 15,
   MARKER_SIZE: 30,
-} as const;
-
-// Cache Configuration
-export const CACHE_CONFIG = {
-  EXPIRY_TIME: 30 * 60 * 1000, // 30 minutes
-  MAX_CACHE_SIZE: 100, // Maximum number of cached items
 } as const;

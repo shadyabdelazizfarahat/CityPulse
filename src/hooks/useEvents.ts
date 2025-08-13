@@ -10,10 +10,7 @@ interface UseEventsReturn extends LoadingState {
   currentPage: number;
   totalElements: number;
   searchEvents: (params: SearchParams) => void;
-  getEventById: (eventId: string) => Promise<Event | null>;
   getPopularEvents: (city?: string) => Promise<void>;
-  getEventsByCategory: (category: string, city?: string) => Promise<void>;
-  clearEvents: () => void;
   refreshEvents: () => Promise<void>;
 }
 
@@ -37,7 +34,6 @@ export const useEvents = (): UseEventsReturn => {
       setIsLoading(true);
       setError(null);
       setLastSearchParams(params);
-      console.log('params', params)
       const result = await apiService.searchEvents(params);
       
       if (params.page && params.page > 0) {
@@ -86,32 +82,6 @@ export const useEvents = (): UseEventsReturn => {
     [searchEvents]
   );
 
-  const getEventById = useCallback(async (eventId: string): Promise<Event | null> => {
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      // Try to get from cache first
-      const cachedEvent = await storageService.getEventFromCache(eventId);
-      if (cachedEvent) {
-        return cachedEvent;
-      }
-
-      // Fetch from API
-      const event = await apiService.getEventById(eventId);
-      
-      // Cache the event
-      await storageService.saveEventToCache(event);
-      
-      return event;
-    } catch (err) {
-      handleError(err, 'Failed to get event details');
-      return null;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
   const getPopularEvents = useCallback(async (city?: string): Promise<void> => {
     try {
       setIsLoading(true);
@@ -134,38 +104,6 @@ export const useEvents = (): UseEventsReturn => {
     }
   }, []);
 
-  const getEventsByCategory = useCallback(async (category: string, city?: string): Promise<void> => {
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      const categoryEvents = await apiService.searchEventsByCategory(category, city);
-      setEvents(categoryEvents);
-      setTotalPages(1);
-      setCurrentPage(0);
-      setTotalElements(categoryEvents.length);
-
-      // Cache events
-      categoryEvents.forEach(event => {
-        storageService.saveEventToCache(event).catch(console.error);
-      });
-
-    } catch (err) {
-      handleError(err, 'Failed to get events by category');
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  const clearEvents = useCallback(() => {
-    setEvents([]);
-    setTotalPages(0);
-    setCurrentPage(0);
-    setTotalElements(0);
-    setError(null);
-    setLastSearchParams(null);
-  }, []);
-
   const refreshEvents = useCallback(async (): Promise<void> => {
     if (lastSearchParams) {
       await searchEvents({ ...lastSearchParams, page: 0 });
@@ -180,10 +118,7 @@ export const useEvents = (): UseEventsReturn => {
     isLoading,
     error,
     searchEvents: debouncedSearch,
-    getEventById,
     getPopularEvents,
-    getEventsByCategory,
-    clearEvents,
     refreshEvents,
   };
 };

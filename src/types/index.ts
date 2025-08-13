@@ -30,6 +30,8 @@ export interface Event {
   info?: string;
   pleaseNote?: string;
   accessibility?: string;
+  lat?: number
+  lng?: number
 }
 
 export interface Venue {

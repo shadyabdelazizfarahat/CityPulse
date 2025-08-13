@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  Image,
   TouchableOpacity,
   Alert,
   Linking,
@@ -14,14 +13,14 @@ import { useTranslation } from '../hooks/useTranslation';
 import { useApp } from '../contexts/AppContext';
 import { RootStackParamList } from '../types';
 import { COLORS, DIMENSIONS, FONTS } from '@/utils';
-import { 
-  formatDateTime, 
-  getBestEventImage, 
+import {
+  formatDateTime,
+  getBestEventImage,
   formatPriceRange,
-  formatVenueAddress 
+  formatVenueAddress,
 } from '../utils/helpers';
-import Button from '../components/Button';
-import Card from '../components/Card';
+import { Button, Card, Image } from '@/components';
+import MapView, { Marker } from 'react-native-maps';
 
 type EventDetailsRouteProp = RouteProp<RootStackParamList, 'EventDetails'>;
 
@@ -34,8 +33,14 @@ export const EventDetailsScreen: React.FC = () => {
   const isEventFavorite = isFavorite(event.id);
   const imageUrl = getBestEventImage(event.images, 800);
   const formattedDate = formatDateTime(event.startDate, event.startTime);
-  const priceRange = event.priceRanges ? formatPriceRange(event.priceRanges) : '';
+  const priceRange = event.priceRanges
+    ? formatPriceRange(event.priceRanges)
+    : '';
   const venueAddress = formatVenueAddress(event.venue);
+  const latitude = event.venue.location?.latitude
+  const longitude = event.venue.location?.longitude
+  const lat = latitude ? parseFloat(latitude) : null
+  const lng = longitude ? parseFloat(longitude) : null
 
   const handleFavoriteToggle = async () => {
     try {
@@ -86,12 +91,17 @@ export const EventDetailsScreen: React.FC = () => {
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.imageContainer}>
-        <Image source={{ uri: imageUrl }} style={styles.image} />
+        {imageUrl && <Image src={imageUrl} style={styles.image} />}
         <TouchableOpacity
           style={[styles.favoriteButton, isRTL && styles.favoriteButtonRTL]}
           onPress={handleFavoriteToggle}
         >
-          <Text style={[styles.favoriteIcon, isEventFavorite && styles.favoriteIconActive]}>
+          <Text
+            style={[
+              styles.favoriteIcon,
+              isEventFavorite && styles.favoriteIconActive,
+            ]}
+          >
             {isEventFavorite ? '♥' : '♡'}
           </Text>
         </TouchableOpacity>
@@ -110,12 +120,36 @@ export const EventDetailsScreen: React.FC = () => {
           </View>
         )}
 
+        {lat && lng &&<Card style={styles.mapCard}>
+          <MapView
+            style={styles.container}
+            initialRegion={{
+              latitude: lat,
+              longitude: lng,
+              latitudeDelta: 0.01,
+              longitudeDelta: 0.01,
+            }}
+          >
+            <Marker
+              coordinate={{
+                latitude: lat,
+                longitude: lng,
+              }}
+              title={event.name}
+            />
+          </MapView>
+        </Card>}
+
         <Card style={styles.infoCard}>
           {renderInfoRow('📅', t('eventDetails.when'), formattedDate)}
-          {renderInfoRow('📍', t('eventDetails.where'), `${event.venue.name}, ${venueAddress}`)}
-          {event.priceRanges && event.priceRanges.length > 0 && 
-            renderInfoRow('💰', t('eventDetails.price'), priceRange)
-          }
+          {renderInfoRow(
+            '📍',
+            t('eventDetails.where'),
+            `${event.venue.name}, ${venueAddress}`,
+          )}
+          {event.priceRanges &&
+            event.priceRanges.length > 0 &&
+            renderInfoRow('💰', t('eventDetails.price'), priceRange)}
         </Card>
 
         {event.description && (
@@ -169,7 +203,7 @@ export const EventDetailsScreen: React.FC = () => {
             style={styles.button}
             fullWidth
           />
-          
+
           {event.venue.location && (
             <Button
               title={t('eventDetails.viewOnMap')}
@@ -250,6 +284,11 @@ const styles = StyleSheet.create({
   },
   infoCard: {
     marginBottom: DIMENSIONS.margin,
+  },
+  mapCard: {
+    width: '100%',
+    height: 300,
+    alignSelf: 'center'
   },
   infoRow: {
     flexDirection: 'row',

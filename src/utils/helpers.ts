@@ -1,5 +1,5 @@
 import { Event, TicketmasterEvent, Venue } from '../types';
-import { VALIDATION, DEFAULT_EVENT_IMAGE } from './constants';
+import { VALIDATION } from './constants';
 
 export const validateEmail = (email: string): boolean => {
   return VALIDATION.EMAIL_REGEX.test(email);
@@ -77,12 +77,7 @@ export const transformTicketmasterEvent = (tmEvent: TicketmasterEvent): Event =>
     startTime: tmEvent.dates.start.localTime,
     endDate: tmEvent.dates.end?.localDate,
     venue: transformedVenue,
-    images: tmEvent.images.length > 0 ? tmEvent.images : [{
-      url: DEFAULT_EVENT_IMAGE,
-      width: 300,
-      height: 200,
-      fallback: true,
-    }],
+    images: tmEvent.images.length > 0 ? tmEvent.images : [],
     priceRanges: tmEvent.priceRanges,
     categories: tmEvent.classifications?.map(c => ({
       id: c.genre.id,
@@ -95,17 +90,13 @@ export const transformTicketmasterEvent = (tmEvent: TicketmasterEvent): Event =>
   };
 };
 
-export const getBestEventImage = (images: any[], preferredWidth: number = 640): string => {
-  if (!images || images.length === 0) {
-    return DEFAULT_EVENT_IMAGE;
-  }
-
+export const getBestEventImage = (images: any[], preferredWidth: number = 640): string | undefined => {
   // Sort by width and find the closest to preferred width
   const sortedImages = images
     .filter(img => img.url && img.width && img.height)
     .sort((a, b) => Math.abs(a.width - preferredWidth) - Math.abs(b.width - preferredWidth));
 
-  return sortedImages[0]?.url || DEFAULT_EVENT_IMAGE;
+  return sortedImages[0]?.url;
 };
 
 export const truncateText = (text: string, maxLength: number): string => {

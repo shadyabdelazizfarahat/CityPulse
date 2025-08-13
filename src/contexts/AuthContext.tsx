@@ -11,7 +11,6 @@ import {
   LoginCredentials,
   RegisterCredentials,
 } from '../types';
-import { apiService } from '../services/api';
 import { storageService } from '../services/storage';
 import { biometricService } from '../services/biometric';
 import firebaseAuthService from '@/services/firebaseAuth';
@@ -25,7 +24,6 @@ interface AuthContextType extends AuthState {
   ) => Promise<void>;
   register: (credentials: RegisterCredentials) => Promise<void>;
   logout: () => Promise<void>;
-  updateUser: (userData: Partial<User>) => Promise<void>;
   authenticateWithBiometrics: () => Promise<boolean>;
   checkBiometricAvailability: () => Promise<{
     available: boolean;
@@ -177,31 +175,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const updateUser = async (userData: Partial<User>): Promise<void> => {
-    if (!state.user) return;
-
-    try {
-      setIsLoading(true);
-      const updatedUser = await apiService.updateProfile(
-        state.user.id,
-        userData,
-      );
-
-      const newUser = { ...state.user, ...updatedUser };
-      await storageService.saveUser(newUser);
-
-      dispatch({
-        type: 'UPDATE_USER',
-        payload: newUser,
-      });
-    } catch (error) {
-      console.error('Update user failed:', error);
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const authenticateWithBiometrics = async (): Promise<boolean> => {
     try {
       const result = await biometricService.authenticate(
@@ -214,7 +187,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           service: 'service_key',
         });
         if (credentials) {
-          console.log('credentials', credentials)
           await login({
             email: credentials.username,
             password: credentials.password,
@@ -257,7 +229,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     login,
     register,
     logout,
-    updateUser,
     authenticateWithBiometrics,
     checkBiometricAvailability,
     isLoading,

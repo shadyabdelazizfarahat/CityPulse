@@ -2,7 +2,6 @@ import React from 'react';
 import {
   View,
   Text,
-  Image,
   StyleSheet,
   TouchableOpacity,
 } from 'react-native';
@@ -17,6 +16,7 @@ import {
 } from '../utils/helpers';
 import { useTranslation } from '../hooks/useTranslation';
 import { useApp } from '../contexts/AppContext';
+import Image from './Image';
 
 
 interface EventCardProps {
@@ -65,7 +65,7 @@ export const EventCard: React.FC<EventCardProps> = ({
       onPress={onPress}
       activeOpacity={0.7}
     >
-      <Image source={{ uri: imageUrl }} style={styles.compactImage} />
+      {imageUrl && <Image src={imageUrl} style={styles.compactImage} />}
       <View style={[styles.compactContent, isRTL && styles.compactContentRTL]}>
         <Text style={[styles.compactTitle, isRTL && styles.textRTL]} numberOfLines={2}>
           {event.name}
@@ -88,7 +88,7 @@ export const EventCard: React.FC<EventCardProps> = ({
       activeOpacity={0.7}
     >
       <View style={styles.featuredImageContainer}>
-        <Image source={{ uri: imageUrl }} style={styles.featuredImage} />
+        {imageUrl && <Image src={imageUrl} style={styles.featuredImage} />}
         <View style={styles.featuredOverlay}>
           <Text style={[styles.featuredTitle, isRTL && styles.textRTL]} numberOfLines={2}>
             {event.name}
@@ -109,7 +109,7 @@ export const EventCard: React.FC<EventCardProps> = ({
       activeOpacity={0.7}
     >
       <View style={styles.imageContainer}>
-        <Image source={{ uri: imageUrl }} style={styles.defaultImage} />
+        {imageUrl && <Image src={imageUrl} style={styles.defaultImage} />}
         {renderFavoriteButton()}
       </View>
       

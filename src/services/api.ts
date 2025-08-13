@@ -1,5 +1,5 @@
 import { Event, TicketmasterResponse, SearchParams, ApiError } from '../types';
-import { transformTicketmasterEvent, delay } from '../utils/helpers';
+import { transformTicketmasterEvent } from '../utils/helpers';
 import { API_CONFIG } from '../utils/constants';
 
 class ApiService {
@@ -36,13 +36,11 @@ class ApiService {
       const url = new URL(endpoint, this.baseUrl);
       const searchParams = new URLSearchParams({
         apikey: this.apiKey,
-        locale: API_CONFIG.DEFAULT_LOCALE,
         ...params,
       });
       for (const [key, value] of searchParams) {
         url.searchParams.set(key, value);
       }
-      console.log('url', url.href)
       const response = await fetch(url.href);
 
       if (!response.ok) {
@@ -87,7 +85,6 @@ class ApiService {
         city: searchParams.city,
         page: searchParams.page?.toString() || '0',
         size: searchParams.size?.toString() || API_CONFIG.PAGE_SIZE.toString(),
-        countryCode: API_CONFIG.DEFAULT_COUNTRY,
       };
 
       const response = await this.fetchWithCache<TicketmasterResponse>(
@@ -110,24 +107,10 @@ class ApiService {
     }
   }
 
-  async getEventById(eventId: string): Promise<Event> {
-    try {
-      const response = await this.fetchWithCache<any>(
-        `/events/${eventId}.json`,
-      );
-
-      return transformTicketmasterEvent(response);
-    } catch (error) {
-      console.error('Get event by ID error:', error);
-      throw new ApiError('Event not found', 404);
-    }
-  }
-
   async getPopularEvents(city?: string): Promise<Event[]> {
     try {
       const params: any = {
-        size: '10',
-        countryCode: API_CONFIG.DEFAULT_COUNTRY,
+        size: API_CONFIG.PAGE_SIZE,
       };
 
       if (city) {
@@ -142,128 +125,6 @@ class ApiService {
       console.error('Get popular events error:', error);
       return [];
     }
-  }
-
-  async searchEventsByCategory(
-    category: string,
-    city?: string,
-  ): Promise<Event[]> {
-    try {
-      const params: any = {
-        classificationName: category,
-        size: '20',
-        countryCode: API_CONFIG.DEFAULT_COUNTRY,
-      };
-
-      if (city) {
-        params.city = city;
-      }
-
-      const response = await this.fetchWithCache<TicketmasterResponse>(
-        '/events.json',
-        params,
-      );
-
-      return response._embedded?.events?.map(transformTicketmasterEvent) || [];
-    } catch (error) {
-      console.error('Search events by category error:', error);
-      return [];
-    }
-  }
-
-  async getEventsByLocation(
-    latitude: number,
-    longitude: number,
-    radius: number = 50,
-  ): Promise<Event[]> {
-    try {
-      const params = {
-        latlong: `${latitude},${longitude}`,
-        radius: radius.toString(),
-        unit: 'miles',
-        size: '20',
-      };
-
-      const response = await this.fetchWithCache<TicketmasterResponse>(
-        '/events.json',
-        params,
-      );
-
-      return response._embedded?.events?.map(transformTicketmasterEvent) || [];
-    } catch (error) {
-      console.error('Get events by location error:', error);
-      return [];
-    }
-  }
-
-  // Mock authentication methods
-  async login(
-    email: string,
-    password: string,
-  ): Promise<{
-    token: string;
-    user: any;
-  }> {
-    await delay(1000);
-
-    if (email === 'demo@citypulse.com' && password === 'password123') {
-      return {
-        token: 'mock_jwt_token_' + Date.now(),
-        user: {
-          id: '1',
-          email,
-          firstName: 'Demo',
-          lastName: 'User',
-          avatar: null,
-          bio: 'Event enthusiast and city explorer',
-          preferences: {
-            language: 'en',
-            notifications: true,
-            biometricEnabled: false,
-          },
-        },
-      };
-    }
-
-    throw new ApiError('Invalid credentials', 401);
-  }
-
-  async register(userData: {
-    email: string;
-    password: string;
-    firstName: string;
-    lastName: string;
-  }): Promise<{
-    token: string;
-    user: any;
-  }> {
-    await delay(1500);
-
-    return {
-      token: 'mock_jwt_token_' + Date.now(),
-      user: {
-        id: Date.now().toString(),
-        email: userData.email,
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-        avatar: null,
-        bio: null,
-        preferences: {
-          language: 'en',
-          notifications: true,
-          biometricEnabled: false,
-        },
-      },
-    };
-  }
-
-  async updateProfile(userId: string, userData: Partial<any>): Promise<any> {
-    await delay(800);
-
-    return {
-      ...userData,
-      id: userId,
-    };
   }
 
   // Clear cache method

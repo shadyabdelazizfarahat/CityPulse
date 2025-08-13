@@ -132,126 +132,6 @@ class StorageService {
     return cache[eventId] || null;
   }
 
-  async clearEventCache(): Promise<void> {
-    await this.removeItem(STORAGE_KEYS.EVENT_CACHE);
-  }
-
-  // Search history methods
-  async saveSearchHistory(searches: string[]): Promise<void> {
-    await this.setItem('@city_pulse_search_history', searches);
-  }
-
-  async getSearchHistory(): Promise<string[]> {
-    return await this.getItem<string[]>('@city_pulse_search_history', []);
-  }
-
-  async addToSearchHistory(searchTerm: string): Promise<void> {
-    const history = await this.getSearchHistory();
-    const filteredHistory = history.filter(term => term !== searchTerm);
-    const updatedHistory = [searchTerm, ...filteredHistory].slice(0, 10); // Keep only last 10 searches
-    await this.saveSearchHistory(updatedHistory);
-  }
-
-  async clearSearchHistory(): Promise<void> {
-    await this.saveSearchHistory([]);
-  }
-
-  // App settings methods
-  async saveAppSettings(settings: { [key: string]: any }): Promise<void> {
-    await this.setItem('@city_pulse_app_settings', settings);
-  }
-
-  async getAppSettings(): Promise<{ [key: string]: any }> {
-    return await this.getItem<{ [key: string]: any }>('@city_pulse_app_settings', {});
-  }
-
-  async updateAppSetting(key: string, value: any): Promise<void> {
-    const settings = await this.getAppSettings();
-    settings[key] = value;
-    await this.saveAppSettings(settings);
-  }
-
-  // Bulk operations
-  async saveBulkData(data: { [key: string]: any }): Promise<void> {
-    try {
-      const pairs = Object.entries(data).map(([key, value]) => [
-        key,
-        JSON.stringify(value),
-      ]);
-      await AsyncStorage.multiSet(pairs as [string, string][]);
-    } catch (error) {
-      console.error('Error saving bulk data:', error);
-      throw error;
-    }
-  }
-
-  async getBulkData(keys: string[]): Promise<{ [key: string]: any }> {
-    try {
-      const values = await AsyncStorage.multiGet(keys);
-      const result: { [key: string]: any } = {};
-      
-      values.forEach(([key, value]) => {
-        result[key] = safeJsonParse(value, null);
-      });
-      
-      return result;
-    } catch (error) {
-      console.error('Error getting bulk data:', error);
-      return {};
-    }
-  }
-
-  // Migration methods (useful for app updates)
-  async migrateData(fromVersion: string, toVersion: string): Promise<void> {
-    console.log(`Migrating data from ${fromVersion} to ${toVersion}`);
-    
-    try {
-      // Add migration logic here based on version differences
-      // For now, this is a placeholder
-      
-      // Example: Migrate old favorite format to new format
-      if (fromVersion === '1.0.0' && toVersion === '1.1.0') {
-        // Perform specific migration
-      }
-      
-      // Update version in storage
-      await this.updateAppSetting('version', toVersion);
-    } catch (error) {
-      console.error('Data migration failed:', error);
-      throw error;
-    }
-  }
-
-  // Utility methods
-  async getAllKeys(): Promise<readonly string[]> {
-    try {
-      return await AsyncStorage.getAllKeys();
-    } catch (error) {
-      console.error('Error getting all keys:', error);
-      return [];
-    }
-  }
-
-  async getStorageSize(): Promise<number> {
-    try {
-      const keys = await this.getAllKeys();
-      const cityPulseKeys = keys.filter(key => key.startsWith('@city_pulse'));
-      const values = await AsyncStorage.multiGet(cityPulseKeys);
-      
-      let totalSize = 0;
-      values.forEach(([, value]) => {
-        if (value) {
-          totalSize += value.length;
-        }
-      });
-      
-      return totalSize;
-    } catch (error) {
-      console.error('Error calculating storage size:', error);
-      return 0;
-    }
-  }
-
   async cleanupExpiredData(): Promise<void> {
     try {
       // Clean up expired cache data
@@ -268,13 +148,7 @@ class StorageService {
       });
       
       await this.saveEventCache(cleanedCache);
-      
-      // Limit search history
-      const searchHistory = await this.getSearchHistory();
-      if (searchHistory.length > 10) {
-        await this.saveSearchHistory(searchHistory.slice(0, 10));
-      }
-      
+            
     } catch (error) {
       console.error('Error cleaning up expired data:', error);
     }

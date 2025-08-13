@@ -102,10 +102,9 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
 
-      const [language, favorites, searchHistory] = await Promise.all([
+      const [language, favorites] = await Promise.all([
         storageService.getLanguage(),
         storageService.getFavorites(),
-        storageService.getSearchHistory(),
       ]);
 
       dispatch({
@@ -114,11 +113,9 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
           language,
           isRTL: isRTL(language),
           favorites,
-          searchHistory,
         },
       });
 
-      // Clean up expired data in background
       storageService.cleanupExpiredData().catch(console.error);
     } catch (error) {
       console.error('Failed to initialize app:', error);

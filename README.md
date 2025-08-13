@@ -27,7 +27,7 @@ Before running the app for the first time, execute the following commands from t
 yarn install
 ```
 
-then install pods
+then install pods (IOS Only)
 
 ```sh
 yarn pods
@@ -35,9 +35,17 @@ yarn pods
 
 then run the project
 
+For IOS
 ```sh
 yarn ios
 ```
+
+For Android
+
+```sh
+yarn android
+```
+
 
 ## Step 3: Modify your app
 
